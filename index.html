@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Checklist</title>
+  <style>
+    :root {
+      --bg: #fafafa;
+      --text: #1a1a1a;
+      --muted: #737373;
+      --line: #e5e5e5;
+      --accent: #2563eb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    main {
+      max-width: 28rem;
+      margin: 0 auto;
+      padding: 3rem 1.25rem 4rem;
+    }
+
+    h1 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin: 0 0 1.5rem;
+      color: var(--muted);
+    }
+
+    form {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.75rem;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0.6rem 0.75rem;
+      background: #fff;
+      color: inherit;
+      font: inherit;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    input[type="text"]::placeholder {
+      color: #a3a3a3;
+    }
+
+    button[type="submit"] {
+      border: none;
+      border-radius: 6px;
+      padding: 0.6rem 1rem;
+      background: var(--text);
+      color: #fff;
+      font: inherit;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+      opacity: 0.9;
+    }
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    li:first-child {
+      border-top: 1px solid var(--line);
+    }
+
+    li label {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    li input[type="checkbox"] {
+      width: 1rem;
+      height: 1rem;
+      accent-color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    li span {
+      transition: color 0.15s ease, text-decoration 0.15s ease;
+    }
+
+    li.done span {
+      color: var(--muted);
+      text-decoration: line-through;
+    }
+
+    li .remove {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 1.25rem;
+      line-height: 1;
+      padding: 0.25rem;
+      cursor: pointer;
+      opacity: 0.5;
+    }
+
+    li .remove:hover {
+      opacity: 1;
+      color: var(--text);
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 0.9375rem;
+      padding: 1rem 0;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Today</h1>
+    <form id="add-form" autocomplete="off">
+      <input
+        type="text"
+        id="new-item"
+        placeholder="Add a task…"
+        maxlength="200"
+        aria-label="New task"
+      />
+      <button type="submit">Add</button>
+    </form>
+    <ul id="list" aria-live="polite"></ul>
+    <p id="empty" class="empty" hidden>No tasks yet.</p>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "checklist-items";
+
+    const DEFAULT_ITEMS = [
+      { text: "Review notes for the week", done: false },
+      { text: "Water the plants", done: false },
+      { text: "Inbox zero (15 min)", done: true },
+    ];
+
+    const listEl = document.getElementById("list");
+    const formEl = document.getElementById("add-form");
+    const inputEl = document.getElementById("new-item");
+    const emptyEl = document.getElementById("empty");
+
+    function load() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+          const initial = DEFAULT_ITEMS.map((item) => ({ ...item }));
+          save(initial);
+          return initial;
+        }
+        const data = JSON.parse(raw);
+        if (!Array.isArray(data)) {
+          const initial = DEFAULT_ITEMS.map((item) => ({ ...item }));
+          save(initial);
+          return initial;
+        }
+        return data;
+      } catch {
+        const initial = DEFAULT_ITEMS.map((item) => ({ ...item }));
+        save(initial);
+        return initial;
+      }
+    }
+
+    function save(items) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    }
+
+    function render(items) {
+      listEl.innerHTML = "";
+      emptyEl.hidden = items.length > 0;
+
+      items.forEach((item, index) => {
+        const li = document.createElement("li");
+        li.className = item.done ? "done" : "";
+
+        const label = document.createElement("label");
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = item.done;
+        cb.addEventListener("change", () => {
+          const next = load();
+          if (next[index]) {
+            next[index].done = cb.checked;
+            save(next);
+            li.className = cb.checked ? "done" : "";
+          }
+        });
+
+        const span = document.createElement("span");
+        span.textContent = item.text;
+
+        label.append(cb, span);
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "remove";
+        remove.setAttribute("aria-label", "Remove task");
+        remove.textContent = "×";
+        remove.addEventListener("click", () => {
+          const next = load().filter((_, i) => i !== index);
+          save(next);
+          render(next);
+        });
+
+        li.append(label, remove);
+        listEl.append(li);
+      });
+    }
+
+    formEl.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const text = inputEl.value.trim();
+      if (!text) return;
+      const items = load();
+      items.push({ text, done: false });
+      save(items);
+      inputEl.value = "";
+      render(items);
+      inputEl.focus();
+    });
+
+    render(load());
+  </script>
+</body>
+</html>

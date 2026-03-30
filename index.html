@@ -71,7 +71,7 @@
       border: none;
       border-radius: 6px;
       padding: 0.6rem 1rem;
-      background: var(--text);
+      background: #16a34a;
       color: #fff;
       font: inherit;
       font-weight: 500;
@@ -261,6 +261,13 @@
     });
 
     render(load());
+
+    const headingEl = document.querySelector("h1");
+    if (headingEl) {
+      const today = new Date();
+      const dateStr = today.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
+      headingEl.textContent = `Today — ${dateStr}`;
+    }
   </script>
 </body>
 </html>

@@ -42,6 +42,17 @@
       color: var(--muted);
     }
 
+    .date-today {
+      font-size: 1.125rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin: 0 0 1.5rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 0.45em;
+    }
+
     form {
       display: flex;
       gap: 0.5rem;
@@ -71,7 +82,7 @@
       border: none;
       border-radius: 6px;
       padding: 0.6rem 1rem;
-      background: var(--text);
+      background: #22c55e;
       color: #fff;
       font: inherit;
       font-weight: 500;
@@ -151,7 +162,10 @@
 </head>
 <body>
   <main>
-    <h1>Today</h1>
+    <div class="date-today">
+      <span>Today</span>
+      <span id="today-date"></span>
+    </div>
     <form id="add-form" autocomplete="off">
       <input
         type="text"
@@ -167,6 +181,12 @@
   </main>
 
   <script>
+    // Set today's date next to "Today"
+    const todayDateSpan = document.getElementById("today-date");
+    const today = new Date();
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    todayDateSpan.textContent = today.toLocaleDateString(undefined, options);
+
     const STORAGE_KEY = "checklist-items";
 
     const DEFAULT_ITEMS = [

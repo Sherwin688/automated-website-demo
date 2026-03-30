@@ -42,6 +42,14 @@
       color: var(--muted);
     }
 
+    .today-date {
+      font-size: 0.95em;
+      margin-left: 0.6em;
+      color: var(--accent);
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+
     form {
       display: flex;
       gap: 0.5rem;
@@ -71,7 +79,7 @@
       border: none;
       border-radius: 6px;
       padding: 0.6rem 1rem;
-      background: var(--text);
+      background: var(--accent);
       color: #fff;
       font: inherit;
       font-weight: 500;
@@ -151,7 +159,7 @@
 </head>
 <body>
   <main>
-    <h1>Today</h1>
+    <h1>Today<span class="today-date" id="today-date"></span></h1>
     <form id="add-form" autocomplete="off">
       <input
         type="text"
@@ -160,13 +168,21 @@
         maxlength="200"
         aria-label="New task"
       />
-      <button type="submit">Add</button>
+      <button type="submit">Add Task</button>
     </form>
     <ul id="list" aria-live="polite"></ul>
     <p id="empty" class="empty" hidden>No tasks yet.</p>
   </main>
 
   <script>
+    // Display today's date next to 'Today'
+    function getTodayString() {
+      const today = new Date();
+      // Use user's locale for date display
+      return today.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+    }
+    document.getElementById("today-date").textContent = " " + getTodayString();
+
     const STORAGE_KEY = "checklist-items";
 
     const DEFAULT_ITEMS = [
